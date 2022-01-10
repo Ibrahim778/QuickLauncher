@@ -9,5 +9,5 @@ Then open the file and add the titleid's of the apps you wish to add seperated b
 
 Example:
 ```
-  ABCD12345;BHBB00001;NPXS10015
+ABCD12345;BHBB00001;NPXS10015
 ```
