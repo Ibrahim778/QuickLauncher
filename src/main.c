@@ -34,7 +34,7 @@ char *strtok(char splitter, char *str)
 
             sce_paf_memcpy(s, str + sizeof(char) * currStrtok, (i - currStrtok));
             currStrtok = i + 1; 
-            return s;
+            return s;  
         }
     }
 
@@ -109,13 +109,14 @@ int module_start()
     sce_paf_fseek(fp, 0, SEEK_SET);
 
     char *config = (char *)sce_paf_malloc(size + 1);
-    sce_paf_memset(config, 0, size + 1);
 
     if(config == NULL)  
     {
         print("Error malloc(size); Failed!\n");
         return SCE_KERNEL_START_RESIDENT;
     }
+
+    sce_paf_memset(config, 0, size + 1);
 
     sce_paf_fread(config, size, 1, fp);
 
