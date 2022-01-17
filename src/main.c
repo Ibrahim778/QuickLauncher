@@ -126,11 +126,11 @@ int module_start()
     int numOfApps = strtokNum(';', config);
     char *currApp = NULL;
     float currXPos = START_X_POS + ((SCE_PLANE_WIDTH - (MAX_APP_PER_ROW * ICON_WIDTH)) / 2), currPlaneHeight = ICON_HEIGHT, currYPos = 0;
-    print("%f\n", ((SCE_PLANE_WIDTH - (MAX_APP_PER_ROW * ICON_WIDTH)) / 2));
+
     if(numOfApps < MAX_APP_PER_ROW) currXPos += ((MAX_APP_PER_ROW - numOfApps) * ICON_WIDTH) / 2;
 
     MakeWidgetWithProperties("QuickLauncher_main_plane", NULL, plane, 0, 0, SCE_PLANE_WIDTH, currPlaneHeight, 1,1,1,0, NULL);
-
+    
     do
     {
         currApp = strtok(';', config);
@@ -138,8 +138,10 @@ int module_start()
         if(currApp != NULL && sce_paf_strlen(currApp) != 0)
         {
             SceBool isSystemApp = sce_paf_strstr(currApp, "NPXS") != NULL; //Not if it runs in system mode, talking about vs0: apps here
+
             char refID[24];
             sce_paf_snprintf(refID, sizeof(refID), "QuickLauncher_%s", currApp);
+        
             print("Adding: %s\n", currApp);
 
             MakeWidgetWithProperties(refID, "QuickLauncher_main_plane", button, currXPos, currYPos, 80, 80, 1,1,1,1, NULL);
@@ -148,7 +150,7 @@ int module_start()
             sce_paf_snprintf(refID, sizeof(refID), "QuickLauncher_%s_tex", currApp);
 
             char texPath[0x100];
-            sce_paf_snprintf(texPath, 0x100, !isSystemApp ? "ux0:app/%s/sce_sys/icon0.png" : "vs0:app/%s/sce_sys/icon0.png" , currApp);
+            sce_paf_snprintf(texPath, 0x100, !isSystemApp ? "ur0:appmeta/%s/icon0.png" : "vs0:app/%s/sce_sys/icon0.png", currApp);
 
             QuickMenuRebornRegisterTexture(texRefID, texPath);
             QuickMenuRebornSetWidgetTexture(refID, texRefID);
