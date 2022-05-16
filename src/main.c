@@ -19,6 +19,11 @@
 
 #define MAX_APP_PER_ROW ((int)(SCE_PLANE_WIDTH / ICON_WIDTH))
 
+#define pafFileExists _ZN3paf2io4Misc6ExistsEPKc
+
+extern bool _ZN3paf2io4Misc6ExistsEPKc(const char *file);
+
+
 int currStrtok = 0;
 
 //sce_paf_strtok causes crash....
@@ -103,6 +108,7 @@ int module_start()
         print("Error opening config file at: %s!\n", CONFIG_FILE_PATH);
         return SCE_KERNEL_START_NO_RESIDENT;
     }
+    
 
     sce_paf_fseek(fp, 0, SEEK_END); 
     long size = sce_paf_ftell(fp);
@@ -113,7 +119,7 @@ int module_start()
     if(config == NULL)  
     {
         print("Error malloc(size); Failed!\n");
-        return SCE_KERNEL_START_RESIDENT;
+        return SCE_KERNEL_START_NO_RESIDENT;
     }
 
     sce_paf_memset(config, 0, size + 1);
@@ -121,7 +127,7 @@ int module_start()
     sce_paf_fread(config, size, 1, fp);
 
     QuickMenuRebornSeparator("QuickLauncher_seperator", SCE_SEPARATOR_HEIGHT);
-
+    
     currStrtok = 0;
     int numOfApps = strtokNum(';', config);
     char *currApp = NULL;
@@ -144,28 +150,29 @@ int module_start()
         
             print("Adding: %s\n", currApp);
 
-            MakeWidgetWithProperties(refID, "QuickLauncher_main_plane", button, currXPos, currYPos, 80, 80, 1,1,1,1, NULL);
-
             char texRefID[28];
             sce_paf_snprintf(refID, sizeof(refID), "QuickLauncher_%s_tex", currApp);
 
             char texPath[0x100];
             sce_paf_snprintf(texPath, 0x100, !isSystemApp ? "ur0:appmeta/%s/icon0.png" : "vs0:app/%s/sce_sys/icon0.png", currApp);
-
-            QuickMenuRebornRegisterTexture(texRefID, texPath);
-            QuickMenuRebornSetWidgetTexture(refID, texRefID);
-
-            currXPos += ICON_WIDTH;
-            if (currXPos > MAX_X_POS)
+            if(pafFileExists(texPath))
             {
-                currXPos = START_X_POS + ((SCE_PLANE_WIDTH - (MAX_APP_PER_ROW * ICON_WIDTH)) / 2);
-                currYPos += ICON_HEIGHT;
-                currPlaneHeight += ICON_HEIGHT;
-                QuickMenuRebornSetWidgetSize("QuickLauncher_main_plane", SCE_PLANE_WIDTH, currPlaneHeight, 0, 0);
-            }
-            print("System App: %s\n", isSystemApp ? "True" : "False");
-            QuickMenuRebornRegisterEventHanlder(refID, QMR_BUTTON_RELEASE_ID, isSystemApp ? StartSystemApp : StartNormalApp, NULL);
+                MakeWidgetWithProperties(refID, "QuickLauncher_main_plane", button, currXPos, currYPos, 80, 80, 1,1,1,1, NULL);
 
+                QuickMenuRebornRegisterTexture(texRefID, texPath);
+                QuickMenuRebornSetWidgetTexture(refID, texRefID);
+                QuickMenuRebornRegisterEventHanlder(refID, QMR_BUTTON_RELEASE_ID, isSystemApp ? StartSystemApp : StartNormalApp, NULL);
+
+                currXPos += ICON_WIDTH;
+                if (currXPos > MAX_X_POS)
+                {
+                    currXPos = START_X_POS + ((SCE_PLANE_WIDTH - (MAX_APP_PER_ROW * ICON_WIDTH)) / 2);
+                    currYPos += ICON_HEIGHT;
+                    currPlaneHeight += ICON_HEIGHT;
+                    QuickMenuRebornSetWidgetSize("QuickLauncher_main_plane", SCE_PLANE_WIDTH, currPlaneHeight, 0, 0);
+                }
+            }
+            else print("Error! %s is not installed or icon is missing!\n", currApp);
         }
 
         sce_paf_free(currApp);
@@ -193,13 +200,13 @@ int module_stop()
     long size = sce_paf_ftell(fp);
     sce_paf_fseek(fp, 0, SEEK_SET);
 
-    char *config = sce_paf_malloc(size + 1);
+    char *config = (char *)sce_paf_malloc(size + 1);
     sce_paf_memset(config, 0, size + 1);
 
     if(config == NULL)  
     {
         print("Error malloc(size); Failed!\n");
-        return SCE_KERNEL_START_RESIDENT;
+        return SCE_KERNEL_START_NO_RESIDENT;
     }
 
     sce_paf_fread(config, size, 1, fp);
@@ -208,7 +215,7 @@ int module_stop()
     char *currApp = NULL;
     do
     {
-        currApp = strtok(config, ';');
+        currApp = strtok(';', config);
 
         if(currApp != NULL && sce_paf_strlen(currApp) != 0)
         {

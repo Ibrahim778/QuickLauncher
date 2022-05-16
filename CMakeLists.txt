@@ -33,6 +33,7 @@ target_link_libraries(${PROJECT_NAME}
     SceKernel_stub
     QuickMenuReborn_stub
     ScePafStdc_stub
+    ScePafMisc_stub
     SceAppMgrUser_stub_weak
 )
 
