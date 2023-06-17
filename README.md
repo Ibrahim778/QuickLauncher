@@ -15,3 +15,5 @@ Example:
 ```
 ABCD12345;BHBB00001;NPXS10015
 ```
+
+![Sample photo](https://cdn.discordapp.com/attachments/605460412883796010/930130882646396998/2022-01-10-160536.jpg)
